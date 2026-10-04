@@ -134,7 +134,10 @@ button:focus-visible {
 /* ---------- Header ---------- */
 
 /* The header stays pinned so the nav is always in reach on the long home scroll.
- * Its ground follows the sheet underneath (white paper pages, cream gallery). */
+ * It's see-through: the page shows behind it as it scrolls up and fades out.
+ * A light veil keeps the nav readable. Its color follows the sheet underneath
+ * (white paper pages, cream gallery), and it runs a little past the bar, fading
+ * to nothing, so there's no hard edge. Lower its opacity for a clearer header. */
 .site-header {
   position: sticky;
   top: 0;
@@ -145,12 +148,23 @@ button:focus-visible {
   justify-content: space-between;
   gap: 0.25rem 1rem;
   padding: calc(env(safe-area-inset-top, 0px) + 14 * var(--vu)) calc(22 * var(--vu)) calc(10 * var(--vu)) calc(28 * var(--vu));
-  background: var(--page);
+}
+
+.site-header::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 -1em;
+  z-index: -1;
+  background-color: var(--page);
+  opacity: 0.7;
+  -webkit-mask-image: linear-gradient(#000 50%, transparent);
+  mask-image: linear-gradient(#000 50%, transparent);
+  pointer-events: none;
   transition: background-color 0.6s ease;
 }
 
-body[data-sheet="gallery"] .site-header {
-  background: var(--gallery-bg);
+body[data-sheet="gallery"] .site-header::before {
+  background-color: var(--gallery-bg);
 }
 
 .site-header__logo {
@@ -198,6 +212,39 @@ body[data-sheet="gallery"] .site-header {
 .has-sheet-fades .sheet,
 .has-sheet-fades .letter {
   will-change: opacity;
+}
+
+/* ---------- Reveals ----------
+ * Each `.reveal` block of text or art fades in with a short rise the first time
+ * it scrolls into view. js/main.js adds `.is-revealed` and staggers blocks that
+ * arrive together with --reveal-delay. */
+
+@media (prefers-reduced-motion: no-preference) {
+  .js .reveal {
+    --reveal-ease: cubic-bezier(0.4, 0, 0.4, 1);
+    opacity: 0;
+    translate: 0 14px;
+    transition: opacity 1s var(--reveal-ease), translate 1s var(--reveal-ease);
+    transition-delay: var(--reveal-delay, 0s);
+    /* If main.js never runs, show the page after a beat instead of leaving it blank. */
+    animation: reveal-failsafe 1s var(--reveal-ease) 4s forwards;
+  }
+
+  .has-reveals .reveal {
+    animation: none;
+  }
+
+  .js .reveal.is-revealed {
+    opacity: 1;
+    translate: none;
+  }
+}
+
+@keyframes reveal-failsafe {
+  to {
+    opacity: 1;
+    translate: none;
+  }
 }
 
 /* ---------- Paper ---------- */
@@ -903,7 +950,7 @@ html:has(.lightbox[open]) {
 
   .site-header__logo {
     flex-shrink: 0;
-    font-size: clamp(19px, 5.6vw, 24px);
+    font-size: clamp(17px, 4.6vw, 22px);
   }
 
   .site-nav {
@@ -911,7 +958,7 @@ html:has(.lightbox[open]) {
   }
 
   .site-nav a {
-    font-size: clamp(14px, 4.1vw, 17px);
+    font-size: clamp(13px, 3.6vw, 16px);
   }
 
   .paper {
@@ -936,7 +983,7 @@ html:has(.lightbox[open]) {
 
   .paper__note {
     margin: calc(60 * var(--u)) calc(43 * var(--u)) 0 calc(60 * var(--u));
-    font-size: 15px;
+    font-size: 12px;
   }
 
   /* Home */
@@ -946,7 +993,7 @@ html:has(.lightbox[open]) {
   }
 
   .letter {
-    font-size: clamp(15px, 4.4vw, 19px);
+    font-size: clamp(14px, 3.9vw, 17px);
   }
 
   .letter__verse {
@@ -990,11 +1037,11 @@ html:has(.lightbox[open]) {
   }
 
   .details__list dt {
-    font-size: 19px;
+    font-size: 16px;
   }
 
   .details__list dd {
-    font-size: 14px;
+    font-size: 12px;
   }
 
   .details__illustration {
@@ -1012,16 +1059,16 @@ html:has(.lightbox[open]) {
 
   .guide {
     padding: calc(80 * var(--u)) calc(56 * var(--u)) calc(60 * var(--u)) calc(64 * var(--u));
-    font-size: 14px;
+    font-size: 12px;
   }
 
   .guide__title {
-    font-size: clamp(34px, 10vw, 44px);
+    font-size: clamp(28px, 8.4vw, 38px);
   }
 
   .lede {
     margin-top: 6px;
-    font-size: 17px;
+    font-size: 14px;
   }
 
   .guide__row,
@@ -1076,14 +1123,14 @@ html:has(.lightbox[open]) {
 
   .back-link {
     margin: 0 0 32px max(8px, calc(23 * var(--vu)));
-    font-size: 22px;
+    font-size: 18px;
   }
 
   /* Questions */
 
   .faq {
     padding: calc(200 * var(--u)) calc(60 * var(--u)) calc(160 * var(--u)) 0;
-    font-size: 14px;
+    font-size: 12px;
   }
 
   .faq__row,
@@ -1116,7 +1163,7 @@ html:has(.lightbox[open]) {
   }
 
   .faq__question {
-    font-size: 20px;
+    font-size: 16px;
   }
 
   /* Desktop answers keep the mockup's exact line breaks; mobile wraps naturally. */
@@ -1144,7 +1191,7 @@ html:has(.lightbox[open]) {
   }
 
   .faq__contact-heading {
-    font-size: 20px;
+    font-size: 16px;
     font-weight: 700;
   }
 

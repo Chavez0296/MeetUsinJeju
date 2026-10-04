@@ -1,4 +1,4 @@
-/* Meet Us in Jeju: intro envelope, scroll fades (sheets, letter, gallery photos), and photo lightbox. */
+/* Meet Us in Jeju: intro envelope, text reveals, scroll fades (sheets, letter, gallery photos), and photo lightbox. */
 
 (function () {
   "use strict";
@@ -100,6 +100,41 @@
     }
   }
 
+  /* ---------- Text: each block rises into place as it scrolls into view ---------- */
+
+  // The fade and rise themselves are CSS (.reveal in css/style.css). Each block
+  // plays once, the first time it comes into view: usually up from the bottom of
+  // the screen, or down from the top when scrolling back after a jump to a later
+  // section. Blocks that arrive together go in reading order, a beat apart, so
+  // the opening letter writes itself in line by line.
+  function initReveals() {
+    var blocks = Array.prototype.slice.call(document.querySelectorAll(".reveal"));
+    if (!blocks.length) return;
+    document.documentElement.classList.add("has-reveals");
+
+    function reveal(block) {
+      block.classList.add("is-revealed");
+    }
+
+    if (reduceMotion || !("IntersectionObserver" in window)) {
+      blocks.forEach(reveal);
+      return;
+    }
+
+    var observer = new IntersectionObserver(function (entries) {
+      var arriving = 0;
+      // Entries come in the order the blocks were observed: document order.
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        observer.unobserve(entry.target);
+        entry.target.style.setProperty("--reveal-delay", Math.min(arriving++, 5) * 200 + "ms");
+        reveal(entry.target);
+      });
+    }, { rootMargin: "0px 0px -10% 0px" });
+
+    blocks.forEach(function (block) { observer.observe(block); });
+  }
+
   /* ---------- Home: each sheet fades in as the one above it fades out ---------- */
 
   function clamp01(n) {
@@ -126,7 +161,9 @@
 
     function update() {
       ticking = false;
-      var top = header.offsetHeight; // the readable area starts below the pinned header
+      // The readable area starts below the pinned header. The header is
+      // see-through, so fade-outs run on behind it to the top of the screen.
+      var top = header.offsetHeight;
       var vh = window.innerHeight - top;
       var active = sheets[0];
 
@@ -136,32 +173,32 @@
         if (!fades) return;
         // A sheet fades in while its top edge rises from the bottom of the screen
         // to 40% down, and fades out while its bottom edge rises from 60% down to
-        // the header. At a break the two overlap, so one hands off to the next.
+        // the top of the screen. At a break the two overlap, so one hands off to
+        // the next.
         var fadeIn = clamp01((top + vh * 0.95 - rect.top) / (vh * 0.55));
-        var fadeOut = clamp01((rect.bottom - top - vh * 0.05) / (vh * 0.55));
+        var fadeOut = clamp01(rect.bottom / (top + vh * 0.6));
         var t = Math.min(fadeIn, fadeOut);
         sheet.style.opacity = (t * t * (3 - 2 * t)).toFixed(3);
       });
 
       // The opening letter fades from the first bit of scroll, gone by the time its
-      // last line (the signature) reaches the header, and returns on the way back up.
+      // last line (the signature) slips behind the header to the top of the screen,
+      // and returns on the way back up.
       if (fades && letter) {
-        var letterRect = letter.getBoundingClientRect();
-        var end = vh * 0.05;
-        var fullDistance = letterRect.bottom + window.scrollY - top - end;
-        var remaining = letterRect.bottom - top - end;
-        letter.style.opacity = clamp01(fullDistance > 0 ? remaining / fullDistance : 1).toFixed(3);
+        var letterBottom = letter.getBoundingClientRect().bottom;
+        var fullDistance = letterBottom + window.scrollY;
+        letter.style.opacity = clamp01(fullDistance > 0 ? letterBottom / fullDistance : 1).toFixed(3);
       }
 
       // Gallery photos fade in as they rise from the bottom of the screen and fade
-      // out as they approach the header, every time, in either scroll direction.
+      // out as they pass behind the header, every time, in either scroll direction.
       // A small drift (rising into place, then on up) goes with the fade.
       if (fades) {
         photos.forEach(function (photo) {
           var rect = photo.getBoundingClientRect();
           if (rect.bottom < top - vh || rect.top > top + vh * 2) return; // far off screen
           var fadeIn = clamp01((top + vh - rect.top) / (vh * 0.25));
-          var fadeOut = clamp01((rect.bottom - top) / (vh * 0.25));
+          var fadeOut = clamp01(rect.bottom / (top + vh * 0.25));
           photo.style.opacity = Math.min(fadeIn, fadeOut).toFixed(3);
           photo.style.transform = "translateY(" + ((1 - fadeIn) * 24 - (1 - fadeOut) * 24).toFixed(1) + "px)";
         });
@@ -269,6 +306,7 @@
   }
 
   initIntro();
+  initReveals();
   initSheets();
   initLightbox();
 })();
