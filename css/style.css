@@ -113,7 +113,6 @@ button:focus-visible {
 .faq__question,
 .faq__contact-heading,
 .gallery__caption,
-.back-link,
 .envelope__hint {
   font-family: var(--serif);
 }
@@ -242,10 +241,6 @@ button:focus-visible {
   border-image-source: url("../assets/img/paper-long.webp");
 }
 
-.paper--howto::before {
-  border-image-source: url("../assets/img/paper-med.webp");
-}
-
 .paper__note {
   margin: calc(181 * var(--u)) calc(52 * var(--u)) 0 0;
   font-size: max(15px, calc(20 * var(--u)));
@@ -364,7 +359,7 @@ button:focus-visible {
   margin-top: calc(94 * var(--u));
 }
 
-/* ---------- Travel & How to ---------- */
+/* ---------- Travel ---------- */
 
 .guide {
   padding: calc(135 * var(--u)) calc(92 * var(--u)) calc(70 * var(--u)) calc(121 * var(--u));
@@ -372,7 +367,9 @@ button:focus-visible {
   line-height: 1.75;
 }
 
+/* Section titles are link targets (Flying's "Here" jumps to #transfer); stop them clear of the pinned header. */
 .guide__title {
+  scroll-margin-top: max(72px, calc(120 * var(--vu)));
   font-family: var(--display);
   font-size: max(44px, calc(73 * var(--u)));
   font-style: italic;
@@ -495,20 +492,6 @@ button:focus-visible {
   margin-top: 1.5em;
   font-weight: 700;
   text-underline-offset: 0.18em;
-  text-decoration-thickness: 1px;
-}
-
-.back-link {
-  display: inline-block;
-  margin: 0 0 calc(40 * var(--vu)) calc(28 * var(--vu));
-  color: var(--sage);
-  font-size: clamp(22px, calc(32 * var(--vu)), 32px);
-  text-decoration: none;
-}
-
-.back-link:hover {
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
   text-decoration-thickness: 1px;
 }
 
@@ -954,10 +937,6 @@ html:has(.lightbox[open]) {
     border-image-source: url("../assets/img/paper-long-mobile.webp");
   }
 
-  .paper--howto::before {
-    border-image-source: url("../assets/img/paper-long-mobile-howto.webp");
-  }
-
   .paper__note {
     margin: calc(60 * var(--u)) calc(43 * var(--u)) 0 calc(60 * var(--u));
     font-size: 12px;
@@ -1032,7 +1011,7 @@ html:has(.lightbox[open]) {
     margin-top: calc(84 * var(--u));
   }
 
-  /* Travel & How to */
+  /* Travel */
 
   /* Equal side margins: nothing reaches into the right padding on mobile. */
   .guide {
@@ -1040,7 +1019,10 @@ html:has(.lightbox[open]) {
     font-size: 12px;
   }
 
+  /* Land a jumped-to title so the see-through header sits in the blank space
+   * between the divider above it and the previous section's last line. */
   .guide__title {
+    scroll-margin-top: calc(270 * var(--u));
     font-size: clamp(28px, 8.4vw, 38px);
   }
 
@@ -1097,11 +1079,6 @@ html:has(.lightbox[open]) {
 
   .facts dd {
     margin-top: 0.6em;
-  }
-
-  .back-link {
-    margin: 0 0 32px max(8px, calc(23 * var(--vu)));
-    font-size: 18px;
   }
 
   /* Questions */
