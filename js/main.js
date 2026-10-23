@@ -147,6 +147,7 @@
 
     var header = document.querySelector(".site-header");
     var ticking = false;
+    var waiting = []; // photos on screen at arrival that haven't risen in yet
 
     document.documentElement.classList.add("has-scroll-fades");
 
@@ -170,6 +171,7 @@
       // out as they pass behind the header, every time, in either scroll direction.
       // A small drift (rising into place, then on up) goes with the fade.
       photos.forEach(function (photo) {
+        if (waiting.indexOf(photo) !== -1) return;
         var rect = photo.getBoundingClientRect();
         if (rect.bottom < top - vh || rect.top > top + vh * 2) return; // far off screen
         var fadeIn = clamp01((top + vh - rect.top) / (vh * 0.25));
@@ -185,6 +187,41 @@
       window.requestAnimationFrame(update);
     }
 
+    // Arriving on the page, the photos already on screen rise into place like the
+    // text reveals: in reading order, a beat apart, each once its image has loaded
+    // (the CSS keeps them hidden until then). The scroll takes over from there.
+    function arrive() {
+      var start = Date.now();
+      var onScreen = photos.filter(function (photo) {
+        var rect = photo.getBoundingClientRect();
+        return rect.bottom > 0 && rect.top < window.innerHeight;
+      });
+      waiting = onScreen.slice();
+
+      onScreen.forEach(function (photo, turn) {
+        var image = photo.querySelector("img");
+
+        function rise() {
+          var delay = Math.max(0, start + Math.min(turn, 5) * 200 - Date.now());
+          photo.style.setProperty("--arrive-delay", delay + "ms");
+          photo.classList.add("is-arriving");
+          waiting.splice(waiting.indexOf(photo), 1);
+          update();
+          window.setTimeout(function () {
+            photo.classList.remove("is-arriving");
+          }, delay + 1000);
+        }
+
+        if (image.complete) {
+          rise();
+        } else {
+          image.addEventListener("load", rise);
+          image.addEventListener("error", rise);
+        }
+      });
+    }
+
+    arrive();
     update();
     window.addEventListener("scroll", requestUpdate, { passive: true });
     window.addEventListener("resize", requestUpdate);
