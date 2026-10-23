@@ -133,11 +133,8 @@ button:focus-visible {
 
 /* ---------- Header ---------- */
 
-/* The header stays pinned so the nav is always in reach on the long home scroll.
- * It's see-through: the page shows behind it as it scrolls up and fades out.
- * A light veil keeps the nav readable. Its color follows the sheet underneath
- * (white paper pages, cream gallery), and it runs a little past the bar, fading
- * to nothing, so there's no hard edge. Lower its opacity for a clearer header. */
+/* The header stays pinned so the nav is always in reach. It's fully transparent:
+ * the page scrolls up behind it with nothing in between. */
 .site-header {
   position: sticky;
   top: 0;
@@ -148,23 +145,6 @@ button:focus-visible {
   justify-content: space-between;
   gap: 0.25rem 1rem;
   padding: calc(env(safe-area-inset-top, 0px) + 14 * var(--vu)) calc(22 * var(--vu)) calc(10 * var(--vu)) calc(28 * var(--vu));
-}
-
-.site-header::before {
-  content: "";
-  position: absolute;
-  inset: 0 0 -1em;
-  z-index: -1;
-  background-color: var(--page);
-  opacity: 0.7;
-  -webkit-mask-image: linear-gradient(#000 50%, transparent);
-  mask-image: linear-gradient(#000 50%, transparent);
-  pointer-events: none;
-  transition: background-color 0.6s ease;
-}
-
-body[data-sheet="gallery"] .site-header::before {
-  background-color: var(--gallery-bg);
 }
 
 .site-header__logo {
@@ -191,27 +171,9 @@ body[data-sheet="gallery"] .site-header::before {
   text-decoration-thickness: 1px;
 }
 
-.site-nav a:hover,
-.site-nav a[aria-current] {
+/* The current page's link (aria-current) isn't marked; only hover underlines. */
+.site-nav a:hover {
   text-decoration-line: underline;
-}
-
-/* ---------- Sheets ----------
- * Home, Travel, Questions and Gallery are sheets in one scroll. js/main.js sets
- * each sheet's opacity from its scroll position so that, at every break, the
- * sheet leaving the top fades out as the next one fades in. */
-
-.sheet {
-  scroll-margin-top: var(--header-h, 64px);
-}
-
-.sheet + .sheet {
-  margin-top: calc(140 * var(--vu));
-}
-
-.has-sheet-fades .sheet,
-.has-sheet-fades .letter {
-  will-change: opacity;
 }
 
 /* ---------- Reveals ----------
@@ -258,7 +220,9 @@ body[data-sheet="gallery"] .site-header::before {
   margin: calc(38 * var(--vu)) auto calc(60 * var(--vu));
 }
 
-/* The torn sheet is 9-sliced so its edges stay crisp however tall the content runs. */
+/* The torn sheet is 9-sliced so its edges stay crisp however tall the content runs.
+ * The slices are 6% / 3% / 5% of the image width, in source pixels of the
+ * 2600px-wide desktop sheets (1200px-wide on mobile, below). */
 .paper::before {
   content: "";
   position: absolute;
@@ -266,7 +230,7 @@ body[data-sheet="gallery"] .site-header::before {
   z-index: -1;
   border-style: solid;
   border-width: calc(var(--pw) * 0.06) calc(var(--pw) * 0.03) calc(var(--pw) * 0.05);
-  border-image-slice: 108 54 90 fill;
+  border-image-slice: 156 78 130 fill;
   border-image-repeat: stretch;
 }
 
@@ -307,6 +271,11 @@ body[data-sheet="gallery"] .site-header::before {
   font-size: max(16px, calc(20 * var(--u)));
   font-weight: var(--serif-body-weight);
   line-height: 1.5;
+}
+
+/* js/main.js fades the letter out as it scrolls away. */
+.has-scroll-fades .letter {
+  will-change: opacity;
 }
 
 .letter__bouquet {
@@ -613,6 +582,11 @@ body[data-sheet="gallery"] .site-header::before {
   line-height: 1.25;
 }
 
+/* A line break only the mobile layout takes (see .br-desktop for the reverse). */
+.br-mobile {
+  display: none;
+}
+
 .faq__phones {
   margin: calc(56 * var(--u)) 0 0;
   padding: 0;
@@ -629,14 +603,15 @@ body[data-sheet="gallery"] .site-header::before {
 
 /* ---------- Gallery ---------- */
 
-/* Cream ground for the gallery, eased in from the white page above it. */
-.gallery-sheet {
-  background: linear-gradient(var(--page), var(--gallery-bg) calc(160 * var(--vu)));
+.page-gallery {
+  background: var(--gallery-bg);
 }
 
-/* Photos are placed exactly where the mockup scatters them, as percentages of
- * the artboard, so the composition scales with the window. Each item carries
- * its desktop (--dx/--dy/--dw) and mobile (--mx/--my/--mw) artboard coordinates. */
+/* Photos are placed where the mockup scatters them, as percentages of the
+ * artboard, so the composition scales with the window. Each item carries its
+ * desktop (--dx/--dy/--dw) and mobile (--mx/--my/--mw) artboard coordinates.
+ * The photos and groups that sit in the middle are centered exactly on the
+ * artboard (the desktop mockup had them ~40px left of center). */
 .gallery {
   --gw: 1920;
   --gh: 11880;
@@ -733,7 +708,7 @@ body[data-sheet="gallery"] .site-header::before {
 
 /* js/main.js sets each photo's opacity and drift from its scroll position; the
  * short transition smooths the steps a mouse wheel scrolls in. */
-.has-sheet-fades .gallery__item {
+.has-scroll-fades .gallery__item {
   transition: opacity 0.2s linear, transform 0.2s linear;
   will-change: opacity, transform;
 }
@@ -967,18 +942,20 @@ html:has(.lightbox[open]) {
     margin-top: 8px;
   }
 
+  .paper::before {
+    border-image-slice: 72 36 60 fill;
+  }
+
   .paper--letter::before {
-    border-image-source: url("../assets/img/paper-long.webp");
+    border-image-source: url("../assets/img/paper-letter-mobile.webp");
   }
 
   .paper--travel::before {
     border-image-source: url("../assets/img/paper-long-mobile.webp");
-    border-image-slice: 66 33 55 fill;
   }
 
   .paper--howto::before {
     border-image-source: url("../assets/img/paper-long-mobile-howto.webp");
-    border-image-slice: 66 33 55 fill;
   }
 
   .paper__note {
@@ -1057,8 +1034,9 @@ html:has(.lightbox[open]) {
 
   /* Travel & How to */
 
+  /* Equal side margins: nothing reaches into the right padding on mobile. */
   .guide {
-    padding: calc(80 * var(--u)) calc(56 * var(--u)) calc(60 * var(--u)) calc(64 * var(--u));
+    padding: calc(80 * var(--u)) calc(64 * var(--u)) calc(60 * var(--u));
     font-size: 12px;
   }
 
@@ -1068,6 +1046,7 @@ html:has(.lightbox[open]) {
 
   .lede {
     margin-top: 6px;
+    margin-right: 0;
     font-size: 14px;
   }
 
@@ -1092,24 +1071,23 @@ html:has(.lightbox[open]) {
     margin-top: 1.6em;
   }
 
+  /* Two even columns, so the longer place names fit on a line. The top margin
+   * is the label's 1.1em gap plus the difference in half-leading between the
+   * paragraph (1.75) and the list (1.5), so label-to-text and text-to-links read
+   * as the same space. */
   .link-list {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.1em 0.75em;
-    margin-top: 1.6em;
-  }
-
-  .link-list--pair {
-    grid-template-columns: repeat(2, max-content);
-    column-gap: 2em;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.1em 1.5em;
+    margin: 1.225em 0 0;
   }
 
   .guide__divider {
     width: calc(998 * var(--u));
-    margin: calc(110 * var(--u)) 0 calc(80 * var(--u)) calc(-40 * var(--u));
+    margin: calc(110 * var(--u)) 0 calc(80 * var(--u)) calc(-46 * var(--u)); /* centered on the sheet */
   }
 
   .guide .paper__note {
-    margin: calc(160 * var(--u)) calc(-20 * var(--u)) 0 0;
+    margin: calc(160 * var(--u)) 0 0;
   }
 
   .facts {
@@ -1162,6 +1140,10 @@ html:has(.lightbox[open]) {
     margin-left: calc(160 * var(--u));
   }
 
+  .faq__item--registry {
+    margin-left: calc(290 * var(--u));
+  }
+
   .faq__question {
     font-size: 16px;
   }
@@ -1169,6 +1151,10 @@ html:has(.lightbox[open]) {
   /* Desktop answers keep the mockup's exact line breaks; mobile wraps naturally. */
   .br-desktop {
     display: none;
+  }
+
+  .br-mobile {
+    display: inline;
   }
 
   .faq__answer {
@@ -1195,9 +1181,9 @@ html:has(.lightbox[open]) {
     font-weight: 700;
   }
 
+  /* The phone numbers line up under the heading's left edge. */
   .faq__phones {
     margin-top: 1em;
-    padding-left: calc(150 * var(--u));
   }
 
   /* Gallery */

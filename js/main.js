@@ -1,4 +1,4 @@
-/* Meet Us in Jeju: intro envelope, text reveals, scroll fades (sheets, letter, gallery photos), and photo lightbox. */
+/* Meet Us in Jeju: intro envelope, text reveals, scroll fades (letter, gallery photos), and photo lightbox. */
 
 (function () {
   "use strict";
@@ -103,10 +103,9 @@
   /* ---------- Text: each block rises into place as it scrolls into view ---------- */
 
   // The fade and rise themselves are CSS (.reveal in css/style.css). Each block
-  // plays once, the first time it comes into view: usually up from the bottom of
-  // the screen, or down from the top when scrolling back after a jump to a later
-  // section. Blocks that arrive together go in reading order, a beat apart, so
-  // the opening letter writes itself in line by line.
+  // plays once, the first time it comes into view. Blocks that arrive together go
+  // in reading order, a beat apart, so the opening letter writes itself in line
+  // by line.
   function initReveals() {
     var blocks = Array.prototype.slice.call(document.querySelectorAll(".reveal"));
     if (!blocks.length) return;
@@ -135,56 +134,33 @@
     blocks.forEach(function (block) { observer.observe(block); });
   }
 
-  /* ---------- Home: each sheet fades in as the one above it fades out ---------- */
+  /* ---------- Scroll fades: the opening letter and the gallery photos ---------- */
 
   function clamp01(n) {
     return n < 0 ? 0 : n > 1 ? 1 : n;
   }
 
-  function initSheets() {
-    var sheets = Array.prototype.slice.call(document.querySelectorAll(".sheet"));
-    if (!sheets.length) return;
-
-    var header = document.querySelector(".site-header");
+  function initScrollFades() {
     var letter = document.querySelector(".letter");
     var photos = Array.prototype.slice.call(document.querySelectorAll(".gallery__item"));
-    var navLinks = Array.prototype.slice.call(document.querySelectorAll('.site-nav a[href^="#"]'));
-    var fades = !reduceMotion;
-    var current = null;
+    if (reduceMotion || (!letter && !photos.length)) return;
+
+    var header = document.querySelector(".site-header");
     var ticking = false;
 
-    if (fades) document.documentElement.classList.add("has-sheet-fades");
-
-    function measureHeader() {
-      document.documentElement.style.setProperty("--header-h", header.offsetHeight + "px");
-    }
+    document.documentElement.classList.add("has-scroll-fades");
 
     function update() {
       ticking = false;
       // The readable area starts below the pinned header. The header is
       // see-through, so fade-outs run on behind it to the top of the screen.
-      var top = header.offsetHeight;
+      var top = header ? header.offsetHeight : 0;
       var vh = window.innerHeight - top;
-      var active = sheets[0];
-
-      sheets.forEach(function (sheet) {
-        var rect = sheet.getBoundingClientRect();
-        if (rect.top <= top + vh * 0.4) active = sheet;
-        if (!fades) return;
-        // A sheet fades in while its top edge rises from the bottom of the screen
-        // to 40% down, and fades out while its bottom edge rises from 60% down to
-        // the top of the screen. At a break the two overlap, so one hands off to
-        // the next.
-        var fadeIn = clamp01((top + vh * 0.95 - rect.top) / (vh * 0.55));
-        var fadeOut = clamp01(rect.bottom / (top + vh * 0.6));
-        var t = Math.min(fadeIn, fadeOut);
-        sheet.style.opacity = (t * t * (3 - 2 * t)).toFixed(3);
-      });
 
       // The opening letter fades from the first bit of scroll, gone by the time its
       // last line (the signature) slips behind the header to the top of the screen,
       // and returns on the way back up.
-      if (fades && letter) {
+      if (letter) {
         var letterBottom = letter.getBoundingClientRect().bottom;
         var fullDistance = letterBottom + window.scrollY;
         letter.style.opacity = clamp01(fullDistance > 0 ? letterBottom / fullDistance : 1).toFixed(3);
@@ -193,25 +169,14 @@
       // Gallery photos fade in as they rise from the bottom of the screen and fade
       // out as they pass behind the header, every time, in either scroll direction.
       // A small drift (rising into place, then on up) goes with the fade.
-      if (fades) {
-        photos.forEach(function (photo) {
-          var rect = photo.getBoundingClientRect();
-          if (rect.bottom < top - vh || rect.top > top + vh * 2) return; // far off screen
-          var fadeIn = clamp01((top + vh - rect.top) / (vh * 0.25));
-          var fadeOut = clamp01(rect.bottom / (top + vh * 0.25));
-          photo.style.opacity = Math.min(fadeIn, fadeOut).toFixed(3);
-          photo.style.transform = "translateY(" + ((1 - fadeIn) * 24 - (1 - fadeOut) * 24).toFixed(1) + "px)";
-        });
-      }
-
-      if (active !== current) {
-        current = active;
-        document.body.setAttribute("data-sheet", active.id);
-        navLinks.forEach(function (link) {
-          if (link.getAttribute("href") === "#" + active.id) link.setAttribute("aria-current", "location");
-          else link.removeAttribute("aria-current");
-        });
-      }
+      photos.forEach(function (photo) {
+        var rect = photo.getBoundingClientRect();
+        if (rect.bottom < top - vh || rect.top > top + vh * 2) return; // far off screen
+        var fadeIn = clamp01((top + vh - rect.top) / (vh * 0.25));
+        var fadeOut = clamp01(rect.bottom / (top + vh * 0.25));
+        photo.style.opacity = Math.min(fadeIn, fadeOut).toFixed(3);
+        photo.style.transform = "translateY(" + ((1 - fadeIn) * 24 - (1 - fadeOut) * 24).toFixed(1) + "px)";
+      });
     }
 
     function requestUpdate() {
@@ -220,34 +185,10 @@
       window.requestAnimationFrame(update);
     }
 
-    measureHeader();
     update();
     window.addEventListener("scroll", requestUpdate, { passive: true });
-    window.addEventListener("resize", function () {
-      measureHeader();
-      requestUpdate();
-    });
+    window.addEventListener("resize", requestUpdate);
     window.addEventListener("pageshow", requestUpdate);
-
-    // The web fonts arrive after the first layout and change every sheet's height,
-    // so a link straight to a section (e.g. "Go back" to #travel) can land short.
-    // Re-land once they're in, unless the guest has already started scrolling.
-    var target = location.hash && document.getElementById(location.hash.slice(1));
-    if (target && document.fonts && document.fonts.ready) {
-      var userScrolled = false;
-      var markScrolled = function () { userScrolled = true; };
-      ["wheel", "touchstart", "keydown"].forEach(function (type) {
-        window.addEventListener(type, markScrolled, { once: true, passive: true });
-      });
-      document.fonts.ready.then(function () {
-        if (userScrolled) return;
-        try {
-          target.scrollIntoView({ behavior: "instant", block: "start" });
-        } catch (err) {
-          target.scrollIntoView(true);
-        }
-      });
-    }
   }
 
   /* ---------- Gallery: lightbox ---------- */
@@ -307,6 +248,6 @@
 
   initIntro();
   initReveals();
-  initSheets();
+  initScrollFades();
   initLightbox();
 })();

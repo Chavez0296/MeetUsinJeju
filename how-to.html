@@ -1,6 +1,12 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <script>
+    // On the live site, show clean addresses (/gallery, not /gallery.html). Links point at the
+    // .html files so they also work when the site is opened locally; GitHub Pages serves
+    // gallery.html at /gallery, so the clean address still works when refreshed or shared.
+    if (/(^|\.)meetusinjeju\.com$/.test(location.hostname) && /\.html$/.test(location.pathname)) history.replaceState(null, "", location.pathname.replace(/(index)?\.html$/, "") + location.search + location.hash);
+  </script>
   <!-- Google Tag Manager -->
   <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
   new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -26,7 +32,7 @@
   <meta property="og:site_name" content="Meet Us in Jeju">
   <meta property="og:title" content="How to Transfer from ICN to GMP">
   <meta property="og:description" content="How to transfer from Incheon International Airport (ICN) to Gimpo International Airport (GMP) by train, bus, or taxi.">
-  <meta property="og:url" content="https://www.meetusinjeju.com/how-to.html">
+  <meta property="og:url" content="https://www.meetusinjeju.com/how-to">
   <meta property="og:image" content="https://www.meetusinjeju.com/assets/img/share.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -50,9 +56,9 @@
     <a class="site-header__logo" href="index.html">Meet Us in Jeju</a>
     <nav aria-label="Main">
       <ul class="site-nav">
-        <li><a href="home.html#travel">Travel</a></li>
-        <li><a href="home.html#questions">Questions</a></li>
-        <li><a href="home.html#gallery">Gallery</a></li>
+        <li><a href="travel.html">Travel</a></li>
+        <li><a href="questions.html">Questions</a></li>
+        <li><a href="gallery.html">Gallery</a></li>
       </ul>
     </nav>
   </header>
@@ -90,10 +96,10 @@
     <section class="guide__row" aria-labelledby="taxi">
       <h2 class="guide__label reveal" id="taxi">Taxi</h2>
       <div class="guide__body">
-        <p class="reveal">Kakao T is Korea’s most widely used taxi app throughout Korea, including Jeju. It allows you to book regular taxis and larger vehicles. You can also use Uber.</p>
+        <p class="reveal">k.ride is a foreigner-focused taxi-hailing app that lets international travelers book rides in South Korea without needing a Korean phone number or a local bank card. It allows you to book regular taxis and larger vehicles. You can also use Uber.</p>
         <p class="reveal">Enter Incheon International Airport as your pickup location and Gimpo International Airport as your destination. Select your preferred taxi and confirm your ride. Follow the app’s instructions to find your designated pickup location at the airport.</p>
-        <p class="reveal">Note: Kakao T might not be able to register your foreign cards. In that case, be prepared to pay in cash or with a physical card after the ride. For guests traveling with large suitcases or in groups, consider booking a larger vehicle.</p>
-        <p class="reveal">Recommendation for wedding guests: Download both Kakao T and Uber before departure. Having both apps available gives you flexibility when arranging transportation, especially after a long international flight.</p>
+        <p class="reveal">Note: In rare occasions, the app might not be able to register your foreign card. In that case, be prepared to pay in cash or with a physical card after the ride. For guests traveling with large suitcases or in groups, consider booking a larger vehicle.</p>
+        <p class="reveal">Recommendation for wedding guests: Download both k.ride and Uber before departure. Having both apps available gives you flexibility when arranging transportation, especially after a long international flight.</p>
         <dl class="facts reveal">
           <div><dt>Travel time</dt><dd>About 40–60 minutes,<br>depending on traffic</dd></div>
           <div><dt>Cost</dt><dd>About ₩40,000–₩60,000<br>(approximately $30–$45), plus tolls.</dd></div>
@@ -104,6 +110,6 @@
     <p class="paper__note reveal">If you have any questions, please reach out directly to us.</p>
   </main>
 
-  <a class="back-link" href="home.html#travel">Go back</a>
+  <a class="back-link" href="travel.html">Go back</a>
 </body>
 </html>

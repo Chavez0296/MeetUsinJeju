@@ -1,6 +1,12 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <script>
+    // On the live site, show clean addresses (/gallery, not /gallery.html). Links point at the
+    // .html files so they also work when the site is opened locally; GitHub Pages serves
+    // gallery.html at /gallery, so the clean address still works when refreshed or shared.
+    if (/(^|\.)meetusinjeju\.com$/.test(location.hostname) && /\.html$/.test(location.pathname)) history.replaceState(null, "", location.pathname.replace(/(index)?\.html$/, "") + location.search + location.hash);
+  </script>
   <!-- Google Tag Manager -->
   <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
   new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
