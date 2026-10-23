@@ -593,8 +593,8 @@ button:focus-visible {
 /* Photos are placed where the mockup scatters them, as percentages of the
  * artboard, so the composition scales with the window. Each item carries its
  * desktop (--dx/--dy/--dw) and mobile (--mx/--my/--mw) artboard coordinates.
- * The photos and groups that sit in the middle are centered exactly on the
- * artboard (the desktop mockup had them ~40px left of center). */
+ * Every photo, and every pair or trio, is centered exactly on the artboard, as
+ * the couple's review notes asked (the mockup had most ~40px left of center). */
 .gallery {
   --gw: 1920;
   --gh: 11880;
